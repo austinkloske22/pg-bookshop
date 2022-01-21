@@ -238,7 +238,7 @@ Now that your cloud postgres instance is up and running we'll want to connect ou
 ```
 cf login
 
-cf create-user-provided-service pg-bookshop-db -t "relational, database" -p '{
+cf create-user-provided-service pg-bookshop-db -t "relational, database, plain" -p '{
 "database": "bookshop",
 "host": "postgresaws1.********.**-****-1.rds.amazonaws.com",
 "user": "postgres",
@@ -263,4 +263,38 @@ cf deploy mta_archives/pg-bookshop_0.0.1.mtar
 ```
 
 ![deployed SRV](/screenshots/deployedSRV.png?raw=true "deployed srv")
+
+
+### Additional micro-services
+
+To run a realistic multitenant scenerio, we'll need to add a few more micro-services to our `mta.yml`. Require those microservices in the srv module.
+
+- pg-bookshop-uaa
+- pg-bookshop-registry
+- pg-bookshop-dest
+
+![add Services](/screenshots/addServices.png?raw=true "add services")
+
+
+build and deploy:
+```
+mbt build
+cf deploy mta_archives/pg-bookshop_0.0.1.mtar
+```
+
+Navigate to the deployed application and view `pg-bookshop-srv` environment variables:
+
+![environment Variables](/screenshots/environmentVariables.png?raw=true "environment Variables")
+
+Copy the newly created VCAP services to the `default-env.json`. At this point, you can restore the original postgre credentials if you'd like to work with a postgres deployed to docker locally. Feel free to swap between localhost and the rds instance as needed.
+
+```
+{
+    "host": "localhost",
+    "port": "5432",
+    "database": "bookshop",
+    "user": "postgres",
+    "password": "postgres"
+}
+```
 

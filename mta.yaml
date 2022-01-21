@@ -24,14 +24,55 @@ modules:
    path: gen/srv
    parameters:
      buildpack: nodejs_buildpack
+   properties:
+     SAP_JWT_TRUST_ACL:
+     - clientid: '*'
+       identityzone: sap-provisioning
    provides:
     - name: srv-api      # required by consumers of CAP services (e.g. approuter)
       properties:
         srv-url: ${default-url}
    requires:
     - name: pg-bookshop-db
+    - name: pg-bookshop-uaa
+    - name: pg-bookshop-registry
+    - name: pg-bookshop-dest
 resources:
+# ------------------------------------------------------------
   - name: pg-bookshop-db
     type: org.cloudfoundry.existing-service
-
+# ------------------------------------------------------------
+  - name: pg-bookshop-dest
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+# ------------------------------------------------------------
+  - name: pg-bookshop-uaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application  
+      path: ./xs-security.json
+      config:
+        xsappname: pg-bookshop-${space}    #  name + space dependency
+        tenant-mode: shared
+# ------------------------------------------------------------
+  - name: pg-bookshop-registry
+    type: org.cloudfoundry.managed-service
+    parameters:
+     config:
+       appName: pg-bookshop
+       appUrls:
+         getDependencies: https://${org}-${space}-pg-bookshop-srv.${default-domain}/callback/v1.0/dependencies
+         onSubscription: https://${org}-${space}-pg-bookshop-srv.${default-domain}/callback/v1.0/tenants/{tenantId}
+       category: Demo
+       description: Bookshop SaaS
+       displayName: Bookshop SaaS Demo
+       xsappname: bookshop-mtx-${space}
+     service: saas-registry
+     service-name: pg-bookshop-registry
+     service-plan: application
+    requires:
+    - name: pg-bookshop-uaa
 
