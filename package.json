@@ -1,0 +1,80 @@
+{
+  "name": "pg-bookshop",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "5.3.2",
+    "@sap/xssec": "^3.2.12",
+    "cds-pg": "0.0.41",
+    "express": "^4",
+    "passport": "^0.5.2"
+  },
+  "devDependencies": {
+    "cds-dbm": "github:austinkloske22/cds-dbm#main",
+    "sqlite3": "^5.0.2"
+  },
+  "scripts": {
+    "start": "cds run",
+    "start:sqlite": "cds deploy -2 sqlite::memory: --no-save && cds serve all --in-memory",
+    "docker:start:pg": "docker-compose -f docker-compose.yml up -d",
+    "deploy:pg": "node_modules/cds-dbm/dist/cli.js deploy --create-db",
+    "deploy:pg:load": "node_modules/cds-dbm/dist/cli.js deploy --load-via delta"
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended",
+    "env": {
+      "es2020": true,
+      "node": true,
+      "jest": true,
+      "mocha": true
+    },
+    "globals": {
+      "SELECT": true,
+      "INSERT": true,
+      "UPDATE": true,
+      "DELETE": true,
+      "CREATE": true,
+      "DROP": true,
+      "CDL": true,
+      "CQL": true,
+      "CXL": true,
+      "cds": true
+    },
+    "rules": {
+      "no-console": "off",
+      "require-atomic-updates": "off"
+    }
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "database"
+      },
+      "database": {
+        "dialect": "plain",
+        "impl": "cds-pg",
+        "model": [
+          "srv"
+        ]
+      }
+    },
+    "migrations": {
+      "db": {
+        "multitenant": true,
+        "schema": {
+          "default": "public",
+          "clone": "_cdsdbm_clone",
+          "reference": "_cdsdbm_ref",
+          "tenants": ["tenant1"]
+        },
+        "deploy": {
+          "tmpFile": "tmp/_autodeploy.json",
+          "undeployFile": "db/undeploy.json"
+        }
+      }
+    }
+  }
+}
